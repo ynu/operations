@@ -107,9 +107,208 @@ curl -s -X POST "https://{API_HOST}/open_api/customization/tgxjxbzksjsjbxx/full"
 | SFYXKS | 是否允许考试（1=是, 0=否） |
 | SFYXJY | 是否允许借用（1=是, 0=否） |
 
+## 查询操作
+
+### 全量数据查询
+
+使用请求体传参：
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+### 指定列查询
+
+使用 `attr_whitelist` 参数指定所需列名：
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "attr_whitelist": ["JASMC", "JXLMC", "SKZWS"]
+}
+```
+
+### 分页
+
+使用 `page` 和 `per_page` 参数：
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| page | 当前页数 | 1 |
+| per_page | 每页数据条数 | 10 |
+
+**示例：**
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "page": 2,
+    "per_page": 100
+}
+```
+
+> **注意**：Oracle 数据库采用堆排序，每次取出的数据是无序的。使用分页时，请务必带上排序条件。
+
+### 排序
+
+使用 `order` 参数：
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "order": {
+        "JXLMC": "asc",
+        "JASMC": "asc"
+    }
+}
+```
+
+- `asc`：升序
+- `desc`：降序
+
+### 条件查询
+
+#### 简单条件查询（相等）
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "JXLMC": "文渊楼"
+}
+```
+
+#### 模糊查询
+
+使用 `%%` 标记模糊查询：
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "JASMC": "%%101%%"
+}
+```
+
+- `文%`：匹配以"文"开头
+- `%101%`：匹配包含"101"
+- `%楼`：匹配以"楼"结尾
+
+> URL 传参时，需将 `%` 转码为 `%25`
+
+#### 比较查询
+
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "SKZWS": {
+        "gte": 50,
+        "lte": 100
+    }
+}
+```
+
+| 操作符 | 含义 |
+|--------|------|
+| gt | 大于 (>) |
+| lt | 小于 (<) |
+| gte | 大于等于 (>=) |
+| lte | 小于等于 (<=) |
+| in | 包含在列表中 |
+
+#### 复杂逻辑查询
+
+使用 `and` 和 `or`：
+```json
+{
+    "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "or": [
+        {"JXLMC": "文渊楼"},
+        {"JXLMC": "文澜楼"}
+    ]
+}
+```
+
+#### NULL 值查询
+
+```json
+// 查询 NULL
+{
+    "SFYXPK": {
+        "is null": ""
+    }
+}
+
+// 查询非 NULL
+{
+    "SFYXPK": {
+        "is not null": ""
+    }
+}
+```
+
+#### 不等于、不包含查询
+
+```json
+// 不等于
+{
+    "XQDM": {
+        "<>": "DL"
+    }
+}
+
+// 不包含
+{
+    "JXLMC": {
+        "not in": ["文渊楼", "文澜楼"]
+    }
+}
+```
+
+## 数据类型说明
+
+### 字符串类型
+
+使用双引号包裹：
+```json
+{
+    "JXLMC": "文渊楼"
+}
+```
+
+### 数字类型
+
+比较查询时，不要使用引号：
+```json
+{
+    "SKZWS": {
+        "gt": 50
+    }
+}
+```
+
+### 时间类型
+
+默认格式：`yyyy-mm-dd hh24:mi:ss`
+
+```json
+{
+    "create_time": {
+        "gt": "2018-01-01 00:00:00",
+        "lt": "2019-01-01 00:00:00"
+    }
+}
+```
+
+Oracle 数据库可使用 `to_date` 函数：
+```json
+{
+    "create_time": {
+        "gt": "to_date('20181231', 'yyyymmdd')"
+    }
+}
+```
+
 ## 注意事项
 
 1. Token有效期为7200秒，每次查询都需要重新获取
 2. 数据中台返回的数据可能较多，默认展示前20条
 3. 如果用户需要更多数据，可以告知总数量并提供翻页选项
 4. 校区代码：DL=东陆校区，CG=呈贡校区
+5. **Oracle 分页**：使用分页时务必添加排序条件
+6. **数据类型**：数字类型比较时不要加引号，避免字符串比较导致错误
+7. **URL 编码**：URL 传参时，特殊字符需要编码（如 `%` → `%25`）
