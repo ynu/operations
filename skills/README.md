@@ -13,10 +13,6 @@
 | `teacher-query` | 教职工基本信息查询（curl） |
 | `undergraduate-query` | 本科生基本信息查询（curl） |
 
-## 使用方式
-
-将所需 Skill 文件夹复制到项目的 `.trae/skills/` 目录下即可使用。
-
 ## 依赖
 
 部分 Skill 需要 Python 依赖：
