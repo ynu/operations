@@ -3,7 +3,6 @@ name: "graduate-query"
 description: "Query graduate student basic information via curl commands. Invoke when user needs to query graduate student data including full query, pagination, filtering, etc."
 ---
 
-# Skill Path: /Users/na57/workshop/智能查询/.trae/skills/graduate-query
 
 # 研究生基本信息查询 Skill
 
